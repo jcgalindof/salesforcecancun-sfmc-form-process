@@ -1,0 +1,24 @@
+<html>
+    <head>
+    </head>
+    <body>
+        <section id="block-8" class="widget widget_block">
+            <h2 class="wp-block-heading">Suscríbete para recibir noticias y actualizaciones</h2>
+            <!-- 
+                form Start 
+                form element's name is going to be your key
+                form element's value is going to be your value, du
+                these ones you request using Request Parameter in your AMPScript
+                For instance: SET @first_name = REQUESTPARAMETER('first_name')
+            -->
+            <form action="insert your cloudpage url here" enctype="multipart/form-data" method="post">
+                <label class="wp-block-latest-comments__comment-meta" for="first_name">Nombre
+                    <input name="first_name" type="text" placeholder="ejemplo: Alex"></label>
+                <label class="wp-block-latest-comments__comment-meta" for="email">Email
+                    <input name="email" type="text" placeholder="alex@salesforcecancun.com"></label>
+                    <input type="hidden" name="campaign" value="Sidebar Form">
+                    <input name="submit" type="submit" value="enviar">
+            </form>
+        </section>
+    </body>
+</html>

@@ -1,0 +1,50 @@
+%%[
+    /*Aceptemos formularios solo de tu dominio.com con https*/
+    SET @origin = HTTPRequestHeader("Referer")
+    SET @pattern = "^(https:\/\/(.*\.)?((ejemplo)\.com))($|\/)"
+    SET @match = RegExMatch(@origin, @pattern, 1)
+]%%
+<script runat=server>
+    Platform.Load("core","1");
+    var MATCH = Variable.GetValue("@match");
+    if (!MATCH) { MATCH = null }
+    HTTPHeader.SetValue("Access-Control-Allow-Methods","POST");
+    HTTPHeader.SetValue("Access-Control-Allow-Origin",MATCH);
+    Platform.Response.SetResponseHeader("Strict-Transport-Security","max-age=200"); 
+	Platform.Response.SetResponseHeader("X-XSS-Protection","1; mode=block"); 
+	Platform.Response.SetResponseHeader("X-Frame-Options","Deny"); 
+	Platform.Response.SetResponseHeader("X-Content-Type-Options","nosniff"); 
+	Platform.Response.SetResponseHeader("Referrer-Policy","strict-origin-when-cross-origin"); 
+	Platform.Response.SetResponseHeader("Content-Security-Policy","default-src 'self'");
+</script>
+
+%%[
+    /* global variables */
+    SET @DATA_EXTENSION = 'salesforcecancun_registros'
+    /* get the values from the parameters sent by your form */
+    SET @FIRST_NAME = RequestParameter('first_name')
+    SET @EMAIL = RequestParameter('email')
+    SET @CAMPAIGN = RequestParameter('campaign')
+    /* Insert your upsertDE function here */
+    UpsertDE(@DATA_EXTENSION, 1,
+    'email', @EMAIL,
+    'first_name', @first_name,
+    'campaign', @CAMPAIGN,
+    'submit_date', NOW()
+    )
+    /* 
+      additional options can be added here like showing a different message if the user is already registered, etcetera.
+    */
+]%%
+ <div id="content">
+    data extension = %%=v(@DATA_EXTENSION)=%%<br>
+    first name = "%%=v(@first_name)=%%"<br>
+    email = "%%=v(@email)=%%"<br>
+    campaign = "%%=v(@campaign)=%%""
+    <h1>
+        ¡Gracias por registrarte!
+    </h1>
+    <h2>
+        Espera noticias muy pronto.
+    </h2>
+  </div>

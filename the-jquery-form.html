@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Enviar un formulario a una Cloudpage 😃</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS v5.2.1 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+    <link href="the-popup-css.css" rel="stylesheet">
+  </head>
+  <body>
+    <header>
+      <!-- place navbar here -->
+    </header>
+    <!-- aquí empieza lo importante -->
+    <main>
+      <div class="container-lg">
+        <script   src="https://code.jquery.com/jquery-3.7.0.min.js"   integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="   crossorigin="anonymous"></script>
+        <div class="row">
+          <div class="col">
+            <section id="block-8" class="widget widget_block">
+              <h2 class="wp-block-heading">Suscríbete para recibir noticias y actualizaciones</h2>
+              <!-- 
+                form Start 
+                form element's name is going to be your key
+                form element's value is going to be your value, du
+                these ones you request using Request Parameter in your AMPScript
+                For instance: SET @first_name = REQUESTPARAMETER('first_name')
+              -->
+              <form id="theJQueryForm">
+                <div class="form-group mb-3">
+                  <label class="" for="first_name">Nombre
+                    <input name="first_name" id="first_name" type="text" placeholder="ejemplo: Alex">
+                  </label>
+                </div>
+                <div class="form-group mb-3">
+                  <label class="wp-block-latest-comments__comment-meta" for="email">Email
+                    <input name="email" id="email" type="text" placeholder="alex@salesforcecancun.com">
+                  </label>
+                </div>
+                <div class="form-group mb-3">
+                  <input type="hidden" name="campaign" value="Sidebar Form">
+                  <button class="btn btn-primary" id="submitBtn" name="submit" type="submit" class="btn2" >Enviar</button>
+                </div>
+              </form>
+              <div id="popup" style="display: none;">     
+                <div class="content-popup">        
+                  <div class="close"><a href="#" id="close">X</a></div>         
+                    <div>          
+                      <div id="result"></div>             
+                      <div style="float:left; width:100%;">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="popup-overlay"></div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </main>
+    <footer>
+      <!-- place footer here -->
+    </footer>
+    <!-- jQuery validator -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.15.0/jquery.validate.min.js"></script>
+    <script>
+      // Attach a submit handler to the form
+      $( "#theJQueryForm" ).on( "submit", function( event ) {
+      // Stop form from submitting normally
+      event.preventDefault();
+      //validación del nombre
+      $.validator.addMethod("customname",
+          function (value, element) {
+              return /^([a-zA-Z'À-ÿ-.])/.test(value);
+          },
+          "<div class='regular_required_msg'>Por favor ingrese el nombre correcto</div>"
+      );
+      //Validación del email
+      $.validator.addMethod("customemail", 
+          function(value, element) {
+              return /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/.test(value);
+          }, 
+          "<div class='regular_required_msg'>El correo no es una dirección válida</div>"
+      );  
+      $('#theJQueryForm').validate({ 
+          errorElement: "div",
+          rules: {
+              'first_name': {
+                  required: true,
+                  customname: true,
+              }, 
+              'email': {
+                  required: true,
+                  customemail: true,
+                  "remote":{
+                      //Agregar la url de la cloudpage que contiene la validación del email, está en email-validation.amp
+                      url: 'inserta aquí la url',
+                      type: "post",
+                      data:
+                      {
+                          unique_id: function () {
+                              return $('#email').val();
+                          }
+                      }
+                  } 
+              },         
+              'optin': {
+                required: true
+              },
+          },
+          messages: {
+              'first_name': {
+              required: "<div class='regular_required_msg'>Por favor, verifica tu nombre.</div>"
+              },
+              'email': {
+                  required: "<div class='regular_required_msg'>Por favor, verifica tu correo electrónico.</div>",
+                  email: "<div class='regular_required_msg'>Por favor, verifica tu correo electrónico.</div>",
+                  remote: "<div class='regular_required_msg'>El email ya está registrado.</div>",
+              },
+              'optin': {
+                  required: "<div class='regular_required_msg'>Acepta la política de privacidad</div>"
+              },           
+          },
+          errorPlacement: function(error, element) {
+              if (element.attr("name") == "terms_co")
+              error.insertAfter(".main-error1"); 
+              else if  (element.attr("name") == "optin")
+                  error.insertAfter(".main-error2");    
+              else
+                  error.insertAfter(element);
+          },
+          submitHandler: function(form) {
+          $("#submitBtn").attr("disabled", true);
+          // Get some values from elements on the page:
+          var $form = $( this ),
+          form_first_name = $form.find( "input[name='first_name']" ).val(),
+          form_email = $form.find( "input[name='email']" ).val(),
+          form_campaign = $form.find( "input[name='campaign']" ).val(),
+          //inserta la url de tu main.amp aquí
+          url = "inserta la url de tu main.amp aquí";
+          // Send the data using post
+          var posting = $.post( url, { first_name: form_first_name, email: form_email, campaign: form_campaign } );
+          // Put the results in a div
+          posting.done(function( data ) {
+          var content = $( data );
+          $( "#result" ).empty().append( content );
+          $('#popup').fadeIn('slow');         
+          $('.popup-overlay').fadeIn('slow');         
+          $('.popup-overlay').height($(window).height());         
+          return false;
+          } );
+          },
+      });
+      } );
+      $('#close').on('click', function(){
+          $('#popup').fadeOut('slow');         
+          $('.popup-overlay').fadeOut('slow');         
+          return false;
+      });
+    </script>
+    <!-- aquí termina lo importante -->
+    <!-- Bootstrap JavaScript Libraries Opcional -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
+      integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js"
+      integrity="sha384-7VPbUDkoPSGFnVtYi0QogXtr74QeVeeIs99Qfg5YCF+TidwNdjvaKZX19NZ/e6oz" crossorigin="anonymous">
+    </script>
+  </body>
+</html>

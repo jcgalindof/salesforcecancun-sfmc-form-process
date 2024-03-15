@@ -1,0 +1,33 @@
+%%[
+    /*Aceptemos formularios solo de tu dominio.com con https*/
+    SET @origin = HTTPRequestHeader("Referer")
+    SET @pattern = "^(https:\/\/(.*\.)?((ejemplo)\.com))($|\/)"
+    SET @match = RegExMatch(@origin, @pattern, 1)
+]%%
+<script runat=server>
+    Platform.Load("core","1");
+    var MATCH = Variable.GetValue("@match");
+    if (!MATCH) { MATCH = null }
+    HTTPHeader.SetValue("Access-Control-Allow-Methods","POST");
+    HTTPHeader.SetValue("Access-Control-Allow-Origin",MATCH);
+    Platform.Response.SetResponseHeader("Strict-Transport-Security","max-age=200"); 
+	Platform.Response.SetResponseHeader("X-XSS-Protection","1; mode=block"); 
+	Platform.Response.SetResponseHeader("X-Frame-Options","Deny"); 
+	Platform.Response.SetResponseHeader("X-Content-Type-Options","nosniff"); 
+	Platform.Response.SetResponseHeader("Referrer-Policy","strict-origin-when-cross-origin"); 
+	Platform.Response.SetResponseHeader("Content-Security-Policy","default-src 'self'");
+</script>
+%%[
+    SET @LPDE_Name = "salesforcecancun_registros"
+    SET @email_url_value = QueryParameter("unique_id")
+    IF @email_url_value != '' THEN
+        SET @validate_email_user = RowCount(LookupRows(@LPDE_Name,'email',@email_url_value)) 
+        IF @validate_email_user == '' THEN
+            SET @results = "true"
+            OUTPUT(v(@results))
+        ELSE
+            SET @results = "false"
+            OUTPUT(v(@results))
+        ENDIF
+    ENDIF
+]%%
